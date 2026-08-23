@@ -1,9 +1,9 @@
 "use client";
 
-import { initializeApp, getApps, getApp, type FirebaseOptions } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as firebaseSignOut } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
-import { getStorage } from "firebase/storage";
+import { initializeApp, getApps, getApp, type FirebaseApp, type FirebaseOptions } from "firebase/app";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as firebaseSignOut, type Auth } from "firebase/auth";
+import { getFirestore, type Firestore } from "firebase/firestore";
+import { getStorage, type FirebaseStorage } from "firebase/storage";
 
 const firebaseConfig: FirebaseOptions = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -14,15 +14,32 @@ const firebaseConfig: FirebaseOptions = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-export const firebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
-export const auth = getAuth(firebaseApp);
-export const db = getFirestore(firebaseApp);
-export const storage = getStorage(firebaseApp);
+// Firebase browser services must never be initialized while Next.js is
+// prerendering on Vercel. Doing so makes a missing NEXT_PUBLIC_* value look
+// like an auth/invalid-api-key build error. The real services are created
+// when the client bundle runs in the browser.
+const isBrowser = typeof window !== "undefined";
+
+export const firebaseApp = (
+  isBrowser
+    ? getApps().length
+      ? getApp()
+      : initializeApp(firebaseConfig)
+    : null
+) as FirebaseApp;
+
+export const auth = (isBrowser ? getAuth(firebaseApp) : null) as Auth;
+export const db = (isBrowser ? getFirestore(firebaseApp) : null) as Firestore;
+export const storage = (isBrowser ? getStorage(firebaseApp) : null) as FirebaseStorage;
 
 const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: "select_account" });
 
 export async function signInWithGoogle() {
+  if (!isBrowser || !auth) {
+    throw new Error("Google sign-in is only available in the browser.");
+  }
+
   const result = await signInWithPopup(auth, googleProvider);
   const idToken = await result.user.getIdToken();
   const res = await fetch("/api/auth/session", {
@@ -40,5 +57,7 @@ export async function signInWithGoogle() {
 
 export async function signOutAdmin() {
   await fetch("/api/auth/logout", { method: "POST" });
-  await firebaseSignOut(auth);
+  if (isBrowser && auth) {
+    await firebaseSignOut(auth);
+  }
 }
