@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+:root{--font-display:"Fraunces",ui-serif,Georgia,serif;--font-body:"Inter",system-ui,sans-serif;--font-mono:"JetBrains Mono",ui-monospace,monospace}
+body{background:#0b0d12;color:#f1f2f5}
+::selection{background:#5b7fff;color:#0b0d12}
+:focus-visible{outline:2px solid #5b7fff;outline-offset:2px;border-radius:4px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
