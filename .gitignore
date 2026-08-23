@@ -1,0 +1,17 @@
+/node_modules
+/.next
+/out
+/build
+.vercel
+.env
+.env.local
+.env.*.local
+*.pem
+*firebase-adminsdk*.json
+serviceAccountKey.json
+*.tsbuildinfo
+next-env.d.ts
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
