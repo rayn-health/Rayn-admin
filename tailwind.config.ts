@@ -1,0 +1,3 @@
+import type { Config } from "tailwindcss";
+const config:Config={content:["./src/**/*.{js,ts,jsx,tsx,mdx}"],theme:{extend:{colors:{ink:{950:"#0B0D12",900:"#12151C",800:"#1B1F29",700:"#262B38",600:"#3A4152",500:"#5B6478",400:"#8890A0",300:"#B4BAC6",200:"#DDE0E6",100:"#F1F2F5"},signal:{DEFAULT:"#5B7FFF",soft:"#8CA4FF",dim:"#3452C4"},moss:{DEFAULT:"#4CAF7D"},amber:{DEFAULT:"#E0A339"},rose:{DEFAULT:"#E05B5B"}},fontFamily:{display:["var(--font-display)","system-ui","sans-serif"],body:["var(--font-body)","system-ui","sans-serif"],mono:["var(--font-mono)","ui-monospace","monospace"]}}},plugins:[]};
+export default config;
