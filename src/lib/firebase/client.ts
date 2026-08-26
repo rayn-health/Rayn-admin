@@ -16,26 +16,37 @@ const firebaseConfig: FirebaseOptions = {
 
 let firebaseApp: FirebaseApp | null = null;
 let auth: Auth | null = null;
-let db: Firestore | null = null;
-let storage: FirebaseStorage | null = null;
+let firestore: Firestore | null = null;
+let firebaseStorage: FirebaseStorage | null = null;
 
 function getFirebase() {
   if (typeof window === "undefined") throw new Error("Firebase is only available in the browser.");
-  if (auth && db && storage && firebaseApp) return { firebaseApp, auth, db, storage };
+  if (auth && firestore && firebaseStorage && firebaseApp) return { firebaseApp, auth, db: firestore, storage: firebaseStorage };
 
-  const missing = Object.entries(firebaseConfig)
-    .filter(([, value]) => !value)
-    .map(([key]) => key);
-  if (missing.length) {
-    throw new Error(`Firebase is not configured on this deployment. Missing: ${missing.join(", ")}`);
-  }
+  const missing = Object.entries(firebaseConfig).filter(([, value]) => !value).map(([key]) => key);
+  if (missing.length) throw new Error(`Firebase is not configured on this deployment. Missing: ${missing.join(", ")}`);
 
   firebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
   auth = getAuth(firebaseApp);
-  db = getFirestore(firebaseApp);
-  storage = getStorage(firebaseApp);
-  return { firebaseApp, auth, db, storage };
+  firestore = getFirestore(firebaseApp);
+  firebaseStorage = getStorage(firebaseApp);
+  return { firebaseApp, auth, db: firestore, storage: firebaseStorage };
 }
+
+// Lazy proxies keep server rendering/build-time imports safe while exposing the
+// db/storage names expected by the admin pages. The real Firebase instances are
+// created only in the browser when a Firestore/Storage operation is performed.
+export const db = new Proxy({} as Firestore, {
+  get(_target, property) {
+    return (getFirebase().db as any)[property];
+  },
+});
+
+export const storage = new Proxy({} as FirebaseStorage, {
+  get(_target, property) {
+    return (getFirebase().storage as any)[property];
+  },
+});
 
 const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: "select_account" });
